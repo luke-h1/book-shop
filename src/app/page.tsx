@@ -1,94 +1,47 @@
-import Image from 'next/image';
-import styles from './page.module.css';
+import Grid from '@frontend/components/Grid';
+import { LoadingSkeleton } from '@frontend/components/LoadingSkeleton';
+import Pagination from '@frontend/components/Pagination';
+import Panel from '@frontend/components/Panel';
+import Search from '@frontend/components/Search';
+import bookService from '@frontend/services/bookService';
+import { Suspense } from 'react';
 
-export default function Home() {
+interface Props {
+  searchParams: { query?: string; author?: string | string[]; page?: string };
+}
+
+export default async function Page({ searchParams }: Props) {
+  const query = searchParams.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+  const allAuthors = await bookService.fetchAuthors();
+
+  // eslint-disable-next-line no-nested-ternary
+  const selectedAuthors = !searchParams.author
+    ? []
+    : typeof searchParams.author === 'string'
+      ? [searchParams.author]
+      : searchParams.author;
+
+  const totalPages = await bookService.fetchPages(query, selectedAuthors);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main className="flex flex-col justify-between w-full">
+      <Search />
+      <div className="mt-5 flex w-full justify-center">
+        <Pagination totalPages={totalPages} />
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className="flex flex-col gap-6 py-6 lg:flex-row">
+        <Panel authors={selectedAuthors} allAuthors={allAuthors} />
+        <Suspense fallback={<LoadingSkeleton />}>
+          <Grid
+            selectedAuthors={selectedAuthors}
+            query={query}
+            page={currentPage}
+          />
+        </Suspense>
       </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="mt-5 flex w-full justify-center">
+        <Pagination totalPages={totalPages} />
       </div>
     </main>
   );

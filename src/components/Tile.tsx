@@ -1,3 +1,5 @@
+'use client';
+
 import { PhotoIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { useState } from 'react';
