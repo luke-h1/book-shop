@@ -79,7 +79,7 @@ const bookService = {
     }
   },
   async fetchBook(id: string) {
-    const data = await sql`SELECT * FROM Mbooks WHERE id = ${id}`;
+    const data = await sql`SELECT * FROM books WHERE id = ${id}`;
     return data.rows[0];
   },
   async fetchAuthors() {
